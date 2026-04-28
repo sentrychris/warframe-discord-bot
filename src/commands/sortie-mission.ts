@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
+import { formatDuration } from '../util';
 
 /**
  * Builds an embed showing today's Sortie details.
@@ -14,10 +15,14 @@ export const buildSortieMissionEmbed = async (
     const {
       boss,
       faction,
-      eta,
-      startString,
+      activation,
+      expiry,
       variants
     } = data;
+
+    const now = Date.now();
+    const startString = `${formatDuration(now - new Date(activation).getTime())} ago`;
+    const eta = formatDuration(new Date(expiry).getTime() - now);
 
     const missionFields = variants.map((mission: any, index: number) => ({
       name: `Mission ${index + 1}: ${mission.missionTypeKey}`,

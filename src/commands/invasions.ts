@@ -2,27 +2,40 @@ import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
 
 interface InvasionReward {
-  asString: string;
+  countedItems?: { count: number; type: string }[];
+  items?: string[];
+  credits?: number;
   thumbnail?: string;
 }
 
 interface Invasion {
   node: string;
   desc: string;
-  attackingFaction: string;
   attacker: {
     faction: string;
     reward?: InvasionReward;
   };
   defender: {
     faction: string;
-    reward: InvasionReward;
+    reward?: InvasionReward;
   };
   completed: boolean;
   completion: number;
-  eta: string;
   vsInfestation: boolean;
 }
+
+const formatReward = (reward?: InvasionReward): string => {
+  if (!reward) return 'No reward';
+  const parts: string[] = [];
+  for (const item of reward.countedItems ?? []) {
+    parts.push(`${item.count}× ${item.type}`);
+  }
+  for (const item of reward.items ?? []) {
+    parts.push(item);
+  }
+  if (reward.credits) parts.push(`${reward.credits.toLocaleString()} credits`);
+  return parts.length ? parts.join(', ') : 'No reward';
+};
 
 const FACTION_ICONS: Record<string, string> = {
   Corpus: 'https://wiki.warframe.com/images/thumb/IconCorpusOn.png/300px-IconCorpusOn.png',
@@ -46,7 +59,7 @@ export const buildInvasionsEmbed = async (
         .setDescription('There are currently no active invasions.');
     }
 
-    const attackingFactionIcon = FACTION_ICONS[active[0].attackingFaction] ?? DISCORD_ICON.clan;
+    const attackingFactionIcon = FACTION_ICONS[active[0].attacker.faction] ?? DISCORD_ICON.clan;
 
     const embed = new EmbedBuilder()
       .setColor(DISCORD_COLOR.purple)
@@ -64,9 +77,12 @@ export const buildInvasionsEmbed = async (
       const defenderFaction = invasion.defender.faction;
 
       const attackerReward =
-        attackerFaction !== 'Infested' ? `🎁 **${attackerFaction}**: ${invasion.attacker.reward?.asString ?? 'No reward'}\n` : '';
+        attackerFaction !== 'Infested' ? `🎁 **${attackerFaction}**: ${formatReward(invasion.attacker.reward)}\n` : '';
       const defenderReward =
-        defenderFaction !== 'Infested' ? `🎁 **${defenderFaction}**: ${invasion.defender.reward?.asString ?? 'No reward'}\n` : '';
+        defenderFaction !== 'Infested' ? `🎁 **${defenderFaction}**: ${formatReward(invasion.defender.reward)}\n` : '';
+
+      const clampedCompletion = Math.max(0, Math.min(100, invasion.completion)).toFixed(1);
+      const progressLabel = invasion.vsInfestation ? 'Defender Holding' : 'Completion';
 
       embed.addFields({
         name: `${invasion.node} — ${invasion.desc}`,
@@ -74,7 +90,7 @@ export const buildInvasionsEmbed = async (
           `🆚 **${attackerFaction} vs ${defenderFaction}**\n` +
           attackerReward +
           defenderReward +
-          `⏱️ **ETA**: ${invasion.eta} | **Completion**: ${invasion.completion.toFixed(1)}%`,
+          `📊 **${progressLabel}**: ${clampedCompletion}%`,
         inline: false,
       });
     }

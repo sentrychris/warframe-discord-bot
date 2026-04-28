@@ -13,15 +13,12 @@ import { buildArchonHuntEmbed } from './commands/archon-hunt';
 import { buildInvasionsEmbed } from './commands/invasions';
 import { buildRelicDropsEmbed } from './commands/relic-lookup';
 import { buildItemDropsEmbed } from './commands/mission-drops';
-import { buildClanPrizeDrawEmbed } from './commands/clan-prizedraw';
 import { buildTeshinRotationEmbed } from './commands/teshin-rotation';
 import { buildConstructionProgressEmbed } from './commands/fleet-construction';
 import { buildMarketPriceEmbed, getWarframeMarketCheapestSellOrder } from './commands/waframe-market';
 import {
   client,
   DISCORD_PREFIX,
-  FOUNDING_WARLORD_USER_ID,
-  CLAN_ANNOUNCEMENTS_CHANNEL_ID,
   WARFRAME_LIVE_INFO_CHANNEL_ID
 } from './config';
   
@@ -142,27 +139,6 @@ client.on('messageCreate', async (message: Message) => {
     }
 
     return message.reply({ embeds: [buildMarketPriceEmbed(displayName, slug, order)] });
-  }
-
-  /**
-   * Run a clan prizedraw. Bot will post to announcements channel
-   */
-  if (message.content === `${DISCORD_PREFIX} prizedraw`) {
-    if (message.author.id !== FOUNDING_WARLORD_USER_ID) {
-      console.warn(`${message.author.displayName} attempted ${DISCORD_PREFIX}prizedraw`);
-      return;
-    }
-
-    const channel = await client.channels.fetch(CLAN_ANNOUNCEMENTS_CHANNEL_ID);
-
-    if (!channel || !channel.isTextBased()) {
-      console.error('Invalid or non-text channel for prize draw');
-      return;
-    }
-
-    await (channel as TextChannel).send({
-      embeds: [await buildClanPrizeDrawEmbed()],
-    });
   }
 
   /**

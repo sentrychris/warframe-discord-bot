@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, WARFRAME_API } from '../config';
+import { formatDuration } from '../util';
 
 const ARCHON_IMAGES: Record<string, string> = {
   'Archon Amar': 'https://wiki.warframe.com/images/thumb/ArchonAmar.png/300px-ArchonAmar.png',
@@ -15,10 +16,9 @@ interface ArchonMission {
 interface ArchonHuntData {
   boss: string;
   faction: string;
-  eta: string;
+  activation: string;
+  expiry: string;
   missions: ArchonMission[];
-  expired: boolean;
-  active: boolean;
 }
 
 /**
@@ -31,12 +31,16 @@ export const buildArchonHuntEmbed = async (
     const res = await fetch(`${WARFRAME_API}/archonHunt?lang=en`);
     const data: ArchonHuntData = await res.json();
 
-    if (!data.active || data.expired) {
+    const expiryMs = new Date(data.expiry).getTime();
+    const activationMs = new Date(data.activation).getTime();
+    const now = Date.now();
+    if (now < activationMs || now >= expiryMs) {
       return new EmbedBuilder()
         .setColor(DISCORD_COLOR.red)
         .setTitle('Archon Hunt')
         .setDescription('No active Archon Hunt found.')
     }
+    const eta = formatDuration(expiryMs - now);
 
     const image = ARCHON_IMAGES[data.boss] ?? ARCHON_IMAGES['Archon Nira'];
 
@@ -52,7 +56,7 @@ export const buildArchonHuntEmbed = async (
       .addFields(
         { name: 'Boss', value: data.boss, inline: true },
         { name: 'Faction', value: data.faction, inline: true },
-        { name: 'Time Remaining', value: data.eta, inline: true },
+        { name: 'Time Remaining', value: eta, inline: true },
       )
       .setFooter({ text: embedFooter });
 

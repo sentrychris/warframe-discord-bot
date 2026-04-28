@@ -11,6 +11,14 @@ export const getFormattedTimestamp = (): string => {
   return `${day} ${month} at ${hours}:${minutes}:${seconds}`;
 };
 
+export const formatDuration = (ms: number): string => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${hours}h ${minutes}m ${seconds}s`;
+};
+
 export const loadStoredMessage = async (storageFilepath: string): Promise<{ channelId: string, messageId: string } | null> => {
   try {
     const data = await fs.readFile(storageFilepath, 'utf8');

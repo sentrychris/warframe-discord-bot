@@ -19,6 +19,33 @@ const getEndsIn = (expiry: string): string => {
   return `${hours}h ${minutes}m ${seconds}s`;
 };
 
+// Game-constant cycle durations (seconds). Used to advance past stale upstream data.
+const CYCLE_DURATIONS_S = {
+  cetus: { day: 6000, night: 3000 },
+  cambion: { fass: 6000, vome: 3000 },
+  vallis: { warm: 400, cold: 1200 },
+};
+
+/**
+ * If the API's expiry has already passed, advance through alternating phases until
+ * we land in the future. The warframestat per-cycle endpoints can lag behind real
+ * time, especially Vallis (~26 min total cycle).
+ */
+const rollForward = (
+  expiryISO: string,
+  state: string,
+  durations: Record<string, number>
+): { expiry: string; state: string } => {
+  const phases = Object.keys(durations);
+  let exp = new Date(expiryISO).getTime();
+  let s = state.toLowerCase();
+  while (exp <= Date.now()) {
+    s = phases.find(p => p !== s) ?? s;
+    exp += durations[s] * 1000;
+  }
+  return { expiry: new Date(exp).toISOString(), state: s };
+};
+
 /**
  * Shared embed builder
  */
@@ -54,17 +81,17 @@ export const buildWorldCyclesEmbed = async (
     fetch(`${WARFRAME_API}/vallisCycle?lang=en`).then(res => res.json())
   ]);
 
-  const cetusTime = cetusRes.isDay ? '☀️ ⠀Day' : '🌙 ⠀Night';
+  const cetus = rollForward(cetusRes.expiry, cetusRes.state, CYCLE_DURATIONS_S.cetus);
+  const cambion = rollForward(cambionRes.expiry, cambionRes.state, CYCLE_DURATIONS_S.cambion);
+  const vallis = rollForward(vallisRes.expiry, vallisRes.state, CYCLE_DURATIONS_S.vallis);
 
-  const cambionRaw = cambionRes.active.toLowerCase();
-  const cambionTime = cambionRaw === 'fass' ? '🔶 ⠀Fass' : '🔷 ⠀Vome';
+  const cetusTime = cetus.state === 'day' ? '☀️ ⠀Day' : '🌙 ⠀Night';
+  const cambionTime = cambion.state === 'fass' ? '🔶 ⠀Fass' : '🔷 ⠀Vome';
+  const vallisTime = vallis.state === 'cold' ? '❄️ ⠀Cold' : '🔥 ⠀Warm';
 
-  const vallisRaw = vallisRes.state.toLowerCase();
-  const vallisTime = vallisRaw === 'cold' ? '❄️ ⠀Cold' : '🔥 ⠀Warm';
-
-  const cetusEnds = getEndsIn(cetusRes.expiry);
-  const cambionEnds = getEndsIn(cambionRes.expiry);
-  const vallisEnds = getEndsIn(vallisRes.expiry);
+  const cetusEnds = getEndsIn(cetus.expiry);
+  const cambionEnds = getEndsIn(cambion.expiry);
+  const vallisEnds = getEndsIn(vallis.expiry);
 
   const embedTitle = title ?? 'World Cycles';
   const defaultFooter = 'Source: warframestat.us — World cycle times are UTC-based.\n';

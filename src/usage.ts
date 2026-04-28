@@ -48,7 +48,11 @@ export const usage = async (message: Message) => {
             },
             {
               name: '`!wf drops <item name>`',
-              value: 'Finds top 3 missions that drop a specific item.\nExample: `!wf drops critical delay`\n⠀\n',
+              value:
+                'Finds top drop sources for an item across missions, bounties, sorties and other tables.\n' +
+                'Example: `!wf drops critical delay`\n' +
+                '`!wf drops planet <planet>` — list missions on a planet.\n' +
+                '`!wf drops planet <planet> <node>` — show a node\'s reward rotations.\n⠀\n',
               inline: false
             },
             {

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://127.0.0.1:3000/data/info.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/missionRewards/Sedna/Hydron.json)",
+      "Bash(curl -s http://127.0.0.1:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:3000/data/transientRewards.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:3000/data/sortieRewards.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:3000/data/cetusBountyRewards.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:3000/data/solarisBountyRewards.json)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:3000/data/zarimanRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/transientRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/cetusBountyRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/zarimanRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/solarisBountyRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/missionRewards.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/relics.json)",
+      "Bash(curl -s http://127.0.0.1:3000/data/relics/Axi/A1.json)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); states=set\\(r['state'] for r in d['relics']\\); tiers=set\\(r['tier'] for r in d['relics']\\); print\\('states:',states\\); print\\('tiers:',tiers\\); print\\('total:',len\\(d['relics']\\)\\)\")"
+    ]
+  }
+}
