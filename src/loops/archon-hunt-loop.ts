@@ -5,6 +5,8 @@ import { getFormattedTimestamp, loadStoredMessage, saveMessageReference } from '
 
 const TRACKING_FILE = path.join(__dirname, '../../storage/tracking/archon-hunt-message.json');
 
+const INTERVAL_MINUTES = 10;
+
 let message: Message | null = null;
 
 export const setupArchonHuntLoop = async (channel: TextChannel) => {
@@ -26,7 +28,7 @@ export const setupArchonHuntLoop = async (channel: TextChannel) => {
     if (!message) {
       message = await channel.send({
         embeds: [await buildArchonHuntEmbed({
-          footer: `Message updates every 5 minutes. Last updated: ${getFormattedTimestamp()} UTC`
+          footer: `Message updates every ${INTERVAL_MINUTES} minutes. Last updated: ${getFormattedTimestamp()} UTC`
         })],
       });
       await saveMessageReference(TRACKING_FILE, channel.id, message.id);
@@ -39,7 +41,7 @@ export const setupArchonHuntLoop = async (channel: TextChannel) => {
 };
 
 const scheduleNextUpdate = () => {
-  setTimeout(updateArchonMessage, 5 * 60 * 1000);
+  setTimeout(updateArchonMessage, INTERVAL_MINUTES * 60 * 1000);
 };
 
 const updateArchonMessage = async () => {

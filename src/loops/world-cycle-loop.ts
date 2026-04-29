@@ -5,6 +5,8 @@ import { getFormattedTimestamp, loadStoredMessage, saveMessageReference } from '
 
 const TRACKING_FILE = path.join(__dirname, '../../storage/tracking/world-cycles-message.json');
 
+const INTERVAL_MINUTES = 10;
+
 let message: Message | null = null;
 
 export const setupWorldCycleLoop = async (channel: TextChannel) => {
@@ -25,7 +27,7 @@ export const setupWorldCycleLoop = async (channel: TextChannel) => {
 
     if (!message) {
       const embed = await buildWorldCyclesEmbed({
-        footer: `Message updates every 1 minute. Last updated: ${getFormattedTimestamp()} UTC`
+        footer: `Message updates every ${INTERVAL_MINUTES} minutes. Last updated: ${getFormattedTimestamp()} UTC`
       });
       message = await channel.send({
         embeds: Array.isArray(embed) ? embed : [embed],
@@ -44,7 +46,7 @@ const updateLoop = async () => {
 
   try {
     const newEmbed = await buildWorldCyclesEmbed({
-      footer: `Message updates every 1 minute. Last updated: ${getFormattedTimestamp()} UTC`
+      footer: `Message updates every 10 minutes. Last updated: ${getFormattedTimestamp()} UTC`
     });
     await message.edit({
       embeds: Array.isArray(newEmbed) ? newEmbed : [newEmbed],
@@ -53,5 +55,5 @@ const updateLoop = async () => {
     console.error('Failed to update world cycle message:', err);
   }
 
-  setTimeout(updateLoop, 1 * 60 * 1000);
+  setTimeout(updateLoop, INTERVAL_MINUTES * 60 * 1000);
 };
