@@ -1,11 +1,9 @@
+import { ChannelType } from 'discord.js';
 import type { Message, TextChannel } from 'discord.js';
 
 import { logger } from './logger';
 import { reportError } from './error-reporter';
 import { usage } from './usage';
-import { setupWorldCycleLoop } from './loops/world-cycle-loop';
-import { setupSortieMissionLoop } from './loops/sortie-mission-loop';
-import { setupArchonHuntLoop } from './loops/archon-hunt-loop';
 import { buildBaroKiteerLocationEmbed } from './commands/baro-kiteer';
 import { buildNightwaveEmbed } from './commands/nightwave-alerts';
 import { buildVoidFissuresEmbed } from './commands/void-fissures';
@@ -18,6 +16,7 @@ import { buildItemDropsEmbed } from './commands/mission-drops';
 import { buildTeshinRotationEmbed } from './commands/teshin-rotation';
 import { buildConstructionProgressEmbed } from './commands/fleet-construction';
 import { buildMarketPriceEmbed, getWarframeMarketCheapestSellOrder } from './commands/waframe-market';
+import { buildAiReply } from './ai-assistant';
 import {
   client,
   DISCORD_PREFIX,
@@ -30,16 +29,41 @@ client.on('ready', async () => {
     await reportError('Warframe live info channel is invalid or not text-based.', null);
     return;
   }
-  const textChannel = channel as TextChannel;
-
-  logger.info('Client is ready. Setting up loops...');
-  await setupWorldCycleLoop(textChannel);
-  await setupSortieMissionLoop(textChannel);
-  await setupArchonHuntLoop(textChannel);
 });
   
 client.on('messageCreate', async (message: Message) => {
-  if (!message.content.startsWith(DISCORD_PREFIX) || message.author.bot) {
+  if (message.author.bot) {
+    return;
+  }
+
+  const isDM = message.channel.type === ChannelType.DM;
+  const isCommand = message.content.startsWith(DISCORD_PREFIX);
+  if (!isCommand && client.user && (message.mentions.has(client.user) || isDM)) {
+    try {
+      if ('sendTyping' in message.channel && typeof message.channel.sendTyping === 'function') {
+        await message.channel.sendTyping();
+      }
+
+      return message.reply({
+        content: await buildAiReply(message),
+        allowedMentions: {
+          parse: [],
+          repliedUser: false,
+        },
+      });
+    } catch (err) {
+      await reportError('Failed to generate AI mention reply.', err);
+      return message.reply({
+        content: 'I had trouble thinking that through. Try me again in a moment.',
+        allowedMentions: {
+          parse: [],
+          repliedUser: false,
+        },
+      });
+    }
+  }
+
+  if (!message.content.startsWith(DISCORD_PREFIX)) {
     return;
   }
 

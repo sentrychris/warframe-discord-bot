@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { Client, GatewayIntentBits } from 'discord.js';
+import { Client, GatewayIntentBits, Partials } from 'discord.js';
 
 config();
 
@@ -9,12 +9,23 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
-  ]
+  ],
+  partials: [Partials.Channel],
 });
+
+const numberFromEnv = (value: string | undefined, fallback: number): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
 
 const WARFRAME_API = <string>process.env.WARFRAME_API ?? 'https://api.warframestat.us/pc';
 const WARFRAME_DROPS_API = <string>process.env.WARFRAME_DROPS_API ?? 'https://drops.warframestat.us/data/all.json';
 const WARFRAME_MARKET_API = <string>process.env.WARFRAME_MARKET_API ?? 'https://api.warframe.market/v2';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? 'http://localhost:11434/v1';
+const AI_MODEL = process.env.AI_MODEL ?? 'llama3.2:3b';
+const OPENAI_MAX_OUTPUT_TOKENS = numberFromEnv(process.env.OPENAI_MAX_OUTPUT_TOKENS, 600);
+const OPENAI_TIMEOUT_MS = numberFromEnv(process.env.OPENAI_TIMEOUT_MS, 30000);
 
 const DISCORD_BOT_NAME = <string>process.env.DISCORD_BOT_NAME ?? 'Warframe Helper';
 
@@ -49,6 +60,11 @@ export {
   WARFRAME_API,
   WARFRAME_DROPS_API,
   WARFRAME_MARKET_API,
+  OPENAI_API_KEY,
+  OPENAI_BASE_URL,
+  AI_MODEL,
+  OPENAI_MAX_OUTPUT_TOKENS,
+  OPENAI_TIMEOUT_MS,
   DISCORD_BOT_NAME,
   DISCORD_COLOR,
   DISCORD_ICON,

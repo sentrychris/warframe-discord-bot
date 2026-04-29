@@ -53,9 +53,13 @@ CLAN_ICON=https://i.imgur.com/fQn9zNL.png
 CLAN_ANNOUNCEMENTS_CHANNEL_ID=clan_announcements_channel_id
 WARFRAME_MARKET_API=https://api.warframe.market/v2
 WARFRAME_API=https://api.warframestat.us/pc
+OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-5-mini
 ```
 
 > All channel/user IDs can be obtained in Discord by enabling Developer Mode.
+
+Mention the bot with `@Warframe Helper <question>` to get an AI reply. The AI feature uses OpenAI's Responses API and is disabled until `OPENAI_API_KEY` is set.
 
 ## Running the Bot
 
