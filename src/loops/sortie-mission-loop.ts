@@ -2,6 +2,8 @@ import type { TextChannel, Message } from 'discord.js';
 import path from 'path';
 import { buildSortieMissionEmbed } from '../commands/sortie-mission';
 import { getFormattedTimestamp, loadStoredMessage, saveMessageReference } from '../util';
+import { logger } from '../logger';
+import { reportError } from '../error-reporter';
 
 const TRACKING_FILE = path.join(__dirname, '../../storage/tracking/sortie-mission-message.json');
 
@@ -18,10 +20,10 @@ export const setupSortieMissionLoop = async (channel: TextChannel) => {
         const existing = await channel.messages.fetch(stored.messageId);
         if (existing) {
           message = existing;
-          console.log('Reusing previously posted sortie message.');
+          logger.info('Reusing previously posted sortie message.');
         }
       } catch {
-        console.log('Stored sortie message not found; sending a new one.');
+        logger.info('Stored sortie message not found; sending a new one.');
       }
     }
 
@@ -36,7 +38,7 @@ export const setupSortieMissionLoop = async (channel: TextChannel) => {
 
     scheduleNextUpdate();
   } catch (err) {
-    console.error('Error setting up sortie updater:', err);
+    await reportError('Error setting up sortie updater', err);
   }
 };
 
@@ -54,7 +56,7 @@ const updateSortieMessage = async () => {
       })]
     });
   } catch (err) {
-    console.error('Failed to update sortie message:', err);
+    await reportError('Failed to update sortie message', err);
   }
 
   scheduleNextUpdate();

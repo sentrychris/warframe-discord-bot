@@ -1,0 +1,17 @@
+{"level":30,"time":1777436108514,"pid":8661,"hostname":"pc","msg":"Client is ready. Setting up loops..."}
+{"level":30,"time":1777436109007,"pid":8661,"hostname":"pc","msg":"Stored message not found; sending a new one."}
+{"level":30,"time":1777436110285,"pid":8661,"hostname":"pc","msg":"Stored sortie message not found; sending a new one."}
+{"level":30,"time":1777436110769,"pid":8661,"hostname":"pc","msg":"Stored Archon message not found; sending a new one."}
+{"level":30,"time":1777436578214,"pid":11186,"hostname":"pc","msg":"Client is ready. Setting up loops..."}
+{"level":30,"time":1777436578391,"pid":11186,"hostname":"pc","msg":"Reusing previously posted world cycle message."}
+{"level":30,"time":1777436578607,"pid":11186,"hostname":"pc","msg":"Reusing previously posted sortie message."}
+{"level":30,"time":1777436578829,"pid":11186,"hostname":"pc","msg":"Reusing previously posted Archon Hunt message."}
+{"level":30,"time":1777436821780,"pid":12520,"hostname":"pc","msg":"Client is ready. Setting up loops..."}
+{"level":30,"time":1777436821970,"pid":12520,"hostname":"pc","msg":"Reusing previously posted world cycle message."}
+{"level":30,"time":1777436822342,"pid":12520,"hostname":"pc","msg":"Reusing previously posted sortie message."}
+{"level":30,"time":1777436822539,"pid":12520,"hostname":"pc","msg":"Reusing previously posted Archon Hunt message."}
+{"level":30,"time":1777436846569,"pid":12791,"hostname":"pc","msg":"Client is ready. Setting up loops..."}
+{"level":30,"time":1777436846890,"pid":12791,"hostname":"pc","msg":"Reusing previously posted world cycle message."}
+{"level":50,"time":1777436846983,"pid":12791,"hostname":"pc","err":{"type":"Error","message":"Test world-cycle.ts error","stack":"Error: Test world-cycle.ts error\n    at buildWorldCyclesEmbed (/home/chris/workspace/warframe-discord-bot/dist/commands/world-cycles.js:88:15)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async updateLoop (/home/chris/workspace/warframe-discord-bot/dist/loops/world-cycle-loop.js:50:26)"},"msg":"Failed to fetch world cycles"}
+{"level":30,"time":1777436847205,"pid":12791,"hostname":"pc","msg":"Reusing previously posted sortie message."}
+{"level":30,"time":1777436847392,"pid":12791,"hostname":"pc","msg":"Reusing previously posted Archon Hunt message."}

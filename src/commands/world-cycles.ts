@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, WARFRAME_API } from '../config';
+import { reportError } from '../error-reporter';
 
 const WORLD_ICON = {
   cetus: 'https://wiki.warframe.com/images/thumb/Cetus.png/300px-Cetus.png',
@@ -75,50 +76,58 @@ const buildEmbed = (
 export const buildWorldCyclesEmbed = async (
   { filter, title, footer }: {filter?: string, title?: string, footer?: string} = {}
 ): Promise<EmbedBuilder | EmbedBuilder[]> => {
-  const [cetusRes, cambionRes, vallisRes] = await Promise.all([
-    fetch(`${WARFRAME_API}/cetusCycle?lang=en`).then(res => res.json()),
-    fetch(`${WARFRAME_API}/cambionCycle?lang=en`).then(res => res.json()),
-    fetch(`${WARFRAME_API}/vallisCycle?lang=en`).then(res => res.json())
-  ]);
+  try {
+    const [cetusRes, cambionRes, vallisRes] = await Promise.all([
+      fetch(`${WARFRAME_API}/cetusCycle?lang=en`).then(res => res.json()),
+      fetch(`${WARFRAME_API}/cambionCycle?lang=en`).then(res => res.json()),
+      fetch(`${WARFRAME_API}/vallisCycle?lang=en`).then(res => res.json())
+    ]);
 
-  const cetus = rollForward(cetusRes.expiry, cetusRes.state, CYCLE_DURATIONS_S.cetus);
-  const cambion = rollForward(cambionRes.expiry, cambionRes.state, CYCLE_DURATIONS_S.cambion);
-  const vallis = rollForward(vallisRes.expiry, vallisRes.state, CYCLE_DURATIONS_S.vallis);
+    const cetus = rollForward(cetusRes.expiry, cetusRes.state, CYCLE_DURATIONS_S.cetus);
+    const cambion = rollForward(cambionRes.expiry, cambionRes.state, CYCLE_DURATIONS_S.cambion);
+    const vallis = rollForward(vallisRes.expiry, vallisRes.state, CYCLE_DURATIONS_S.vallis);
 
-  const cetusTime = cetus.state === 'day' ? '☀️ ⠀Day' : '🌙 ⠀Night';
-  const cambionTime = cambion.state === 'fass' ? '🔶 ⠀Fass' : '🔷 ⠀Vome';
-  const vallisTime = vallis.state === 'cold' ? '❄️ ⠀Cold' : '🔥 ⠀Warm';
+    const cetusTime = cetus.state === 'day' ? '☀️ ⠀Day' : '🌙 ⠀Night';
+    const cambionTime = cambion.state === 'fass' ? '🔶 ⠀Fass' : '🔷 ⠀Vome';
+    const vallisTime = vallis.state === 'cold' ? '❄️ ⠀Cold' : '🔥 ⠀Warm';
 
-  const cetusEnds = getEndsIn(cetus.expiry);
-  const cambionEnds = getEndsIn(cambion.expiry);
-  const vallisEnds = getEndsIn(vallis.expiry);
+    const cetusEnds = getEndsIn(cetus.expiry);
+    const cambionEnds = getEndsIn(cambion.expiry);
+    const vallisEnds = getEndsIn(vallis.expiry);
 
-  const embedTitle = title ?? 'World Cycles';
-  const defaultFooter = 'Source: warframestat.us — World cycle times are UTC-based.\n';
-  const embedFooter = footer ? defaultFooter + footer : defaultFooter;
+    const embedTitle = title ?? 'World Cycles';
+    const defaultFooter = 'Source: warframestat.us — World cycle times are UTC-based.\n';
+    const embedFooter = footer ? defaultFooter + footer : defaultFooter;
 
-  const lcFilter = filter?.toLowerCase();
-  if (lcFilter === 'cetus') {
-    return buildEmbed('Cetus/Earth', cetusTime, cetusEnds, WORLD_ICON.cetus, DISCORD_COLOR.orange, embedFooter);
+    const lcFilter = filter?.toLowerCase();
+    if (lcFilter === 'cetus') {
+      return buildEmbed('Cetus/Earth', cetusTime, cetusEnds, WORLD_ICON.cetus, DISCORD_COLOR.orange, embedFooter);
+    }
+
+    if (lcFilter === 'cambion') {
+      return buildEmbed('Cambion Drift', cambionTime, cambionEnds, WORLD_ICON.cambion, DISCORD_COLOR.red, embedFooter);
+    }
+
+    if (lcFilter === 'vallis' || lcFilter === 'orb vallis') {
+      return buildEmbed('Orb Vallis', vallisTime, vallisEnds, WORLD_ICON.vallis, DISCORD_COLOR.blue, embedFooter);
+    }
+
+    return new EmbedBuilder()
+      .setColor(DISCORD_COLOR.purple)
+      .setTitle(embedTitle)
+      .setDescription('Current day/night and weather cycles across open worlds')
+      .addFields(
+        { name: 'Cetus (Earth)', value: `${cetusTime}\nEnds in ${cetusEnds}`, inline: true },
+        { name: 'Cambion Drift (Deimos)', value: `${cambionTime}\nEnds in ${cambionEnds}`, inline: true },
+        { name: 'Orb Vallis (Venus)', value: `${vallisTime}\nEnds in ${vallisEnds}`, inline: true }
+      )
+      .setThumbnail(WORLD_ICON.cetus)
+      .setFooter({ text: embedFooter });
+  } catch (err) {
+    await reportError('Failed to fetch world cycles', err);
+    return new EmbedBuilder()
+      .setColor(DISCORD_COLOR.red)
+      .setTitle('World Cycles')
+      .setDescription('Unable to fetch world cycle data at this time.');
   }
-
-  if (lcFilter === 'cambion') {
-    return buildEmbed('Cambion Drift', cambionTime, cambionEnds, WORLD_ICON.cambion, DISCORD_COLOR.red, embedFooter);
-  }
-
-  if (lcFilter === 'vallis' || lcFilter === 'orb vallis') {
-    return buildEmbed('Orb Vallis', vallisTime, vallisEnds, WORLD_ICON.vallis, DISCORD_COLOR.blue, embedFooter);
-  }
-
-  return new EmbedBuilder()
-    .setColor(DISCORD_COLOR.purple)
-    .setTitle(embedTitle)
-    .setDescription('Current day/night and weather cycles across open worlds')
-    .addFields(
-      { name: 'Cetus (Earth)', value: `${cetusTime}\nEnds in ${cetusEnds}`, inline: true },
-      { name: 'Cambion Drift (Deimos)', value: `${cambionTime}\nEnds in ${cambionEnds}`, inline: true },
-      { name: 'Orb Vallis (Venus)', value: `${vallisTime}\nEnds in ${vallisEnds}`, inline: true }
-    )
-    .setThumbnail(WORLD_ICON.cetus)
-    .setFooter({ text: embedFooter });
 };

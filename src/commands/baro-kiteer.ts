@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
+import { reportError } from '../error-reporter';
 
 const formatDuration = (ms: number): string => {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -35,7 +36,7 @@ export const buildBaroKiteerLocationEmbed = async (): Promise<EmbedBuilder> => {
 
     return embed;
   } catch (err) {
-    console.error(err);
+    await reportError('Failed to fetch Baro Ki\'Teer info', err);
     return new EmbedBuilder()
       .setColor(DISCORD_COLOR.red)
       .setTitle("Baro Ki'Teer - Void Trader")

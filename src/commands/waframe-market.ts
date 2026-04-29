@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, WARFRAME_MARKET_API } from '../config';
+import { reportError } from '../error-reporter';
 
 type SellOrder = {
   platinum: number;
@@ -34,7 +35,7 @@ export const getWarframeMarketCheapestSellOrder = async (slug: string): Promise<
     });
 
     if (!response.ok) {
-      console.error(`WFM API error: ${response.status} ${response.statusText}`);
+      await reportError('WFM API error', new Error(`${response.status} ${response.statusText}`));
       return null;
     }
 
@@ -54,7 +55,7 @@ export const getWarframeMarketCheapestSellOrder = async (slug: string): Promise<
       rank: typeof best.rank === 'number' ? best.rank : undefined,
     };
   } catch (err) {
-    console.error('Failed to fetch cheapest sell order:', err);
+    await reportError('Failed to fetch cheapest sell order', err);
     return null;
   }
 };

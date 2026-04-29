@@ -2,6 +2,8 @@ import type { TextChannel, Message } from 'discord.js';
 import path from 'path';
 import { buildWorldCyclesEmbed } from '../commands/world-cycles';
 import { getFormattedTimestamp, loadStoredMessage, saveMessageReference } from '../util';
+import { logger } from '../logger';
+import { reportError } from '../error-reporter';
 
 const TRACKING_FILE = path.join(__dirname, '../../storage/tracking/world-cycles-message.json');
 
@@ -18,10 +20,10 @@ export const setupWorldCycleLoop = async (channel: TextChannel) => {
         const existing = await channel.messages.fetch(stored.messageId);
         if (existing) {
           message = existing;
-          console.log('Reusing previously posted world cycle message.');
+          logger.info('Reusing previously posted world cycle message.');
         }
       } catch {
-        console.log('Stored message not found; sending a new one.');
+        logger.info('Stored message not found; sending a new one.');
       }
     }
 
@@ -37,7 +39,7 @@ export const setupWorldCycleLoop = async (channel: TextChannel) => {
 
     updateLoop();
   } catch (err) {
-    console.error('Error setting up world cycle updater:', err);
+    await reportError('Error setting up world cycle updater', err);
   }
 };
 
@@ -52,7 +54,7 @@ const updateLoop = async () => {
       embeds: Array.isArray(newEmbed) ? newEmbed : [newEmbed],
     });
   } catch (err) {
-    console.error('Failed to update world cycle message:', err);
+    await reportError('Failed to update world cycle message', err);
   }
 
   setTimeout(updateLoop, INTERVAL_MINUTES * 60 * 1000);

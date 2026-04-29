@@ -12,6 +12,7 @@ declare global {
       FOUNDING_WARLORD_USER_ID: string;
       CLAN_ANNOUNCEMENTS_CHANNEL_ID: string;
       WARFRAME_LIVE_INFO_CHANNEL_ID: string;
+      BOT_ERRORS_CHANNEL_ID: string;
     }
   }
 }

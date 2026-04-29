@@ -2,6 +2,8 @@ import type { TextChannel, Message } from 'discord.js';
 import path from 'path';
 import { buildArchonHuntEmbed } from '../commands/archon-hunt';
 import { getFormattedTimestamp, loadStoredMessage, saveMessageReference } from '../util';
+import { logger } from '../logger';
+import { reportError } from '../error-reporter';
 
 const TRACKING_FILE = path.join(__dirname, '../../storage/tracking/archon-hunt-message.json');
 
@@ -18,10 +20,10 @@ export const setupArchonHuntLoop = async (channel: TextChannel) => {
         const existing = await channel.messages.fetch(stored.messageId);
         if (existing) {
           message = existing;
-          console.log('Reusing previously posted Archon Hunt message.');
+          logger.info('Reusing previously posted Archon Hunt message.');
         }
       } catch {
-        console.log('Stored Archon message not found; sending a new one.');
+        logger.info('Stored Archon message not found; sending a new one.');
       }
     }
 
@@ -36,7 +38,7 @@ export const setupArchonHuntLoop = async (channel: TextChannel) => {
 
     scheduleNextUpdate();
   } catch (err) {
-    console.error('Error setting up Archon Hunt updater:', err);
+    await reportError('Error setting up Archon Hunt updater', err);
   }
 };
 
@@ -54,7 +56,7 @@ const updateArchonMessage = async () => {
       })]
     });
   } catch (err) {
-    console.error('Failed to update Archon Hunt message:', err);
+    await reportError('Failed to update Archon Hunt message', err);
   }
 
   scheduleNextUpdate();

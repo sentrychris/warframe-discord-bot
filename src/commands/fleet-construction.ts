@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, WARFRAME_API } from '../config';
+import { reportError } from '../error-reporter';
 
 const getProgressBar = (percent: number, size = 20): string => {
   const clamped = Math.min(Math.max(percent, 0), 100); // clamp 0–100
@@ -41,7 +42,7 @@ export const buildConstructionProgressEmbed = async (): Promise<EmbedBuilder> =>
 
     return embed;
   } catch (err) {
-    console.error('Failed to fetch construction progress:', err);
+    await reportError('Failed to fetch construction progress', err);
     return new EmbedBuilder()
       .setColor(DISCORD_COLOR.red)
       .setTitle('Construction Progress')

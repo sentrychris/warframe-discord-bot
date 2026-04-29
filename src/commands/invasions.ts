@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
+import { reportError } from '../error-reporter';
 
 interface InvasionReward {
   countedItems?: { count: number; type: string }[];
@@ -97,7 +98,7 @@ export const buildInvasionsEmbed = async (
 
     return embed;
   } catch (err) {
-    console.error('Failed to fetch invasions:', err);
+    await reportError('Failed to fetch invasions', err);
     return new EmbedBuilder()
       .setColor(DISCORD_COLOR.red)
       .setTitle('Invasions')

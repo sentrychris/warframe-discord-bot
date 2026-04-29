@@ -1,5 +1,7 @@
 import type { Message, TextChannel } from 'discord.js';
 
+import { logger } from './logger';
+import { reportError } from './error-reporter';
 import { usage } from './usage';
 import { setupWorldCycleLoop } from './loops/world-cycle-loop';
 import { setupSortieMissionLoop } from './loops/sortie-mission-loop';
@@ -25,12 +27,12 @@ import {
 client.on('ready', async () => {
   const channel = await client.channels.fetch(WARFRAME_LIVE_INFO_CHANNEL_ID);
   if (!channel || !channel.isTextBased()) {
-    console.error('Warframe live info channel is invalid or not text-based.');
+    await reportError('Warframe live info channel is invalid or not text-based.', null);
     return;
   }
   const textChannel = channel as TextChannel;
 
-  console.log('Client is ready. Setting up loops...');
+  logger.info('Client is ready. Setting up loops...');
   await setupWorldCycleLoop(textChannel);
   await setupSortieMissionLoop(textChannel);
   await setupArchonHuntLoop(textChannel);

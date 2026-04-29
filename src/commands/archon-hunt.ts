@@ -1,6 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, WARFRAME_API } from '../config';
 import { formatDuration } from '../util';
+import { reportError } from '../error-reporter';
 
 const ARCHON_IMAGES: Record<string, string> = {
   'Archon Amar': 'https://wiki.warframe.com/images/thumb/ArchonAmar.png/300px-ArchonAmar.png',
@@ -70,7 +71,7 @@ export const buildArchonHuntEmbed = async (
 
     return embed;
   } catch (error) {
-    console.error('Failed to fetch Archon Hunt:', error);
+    await reportError('Failed to fetch Archon Hunt', error);
     return new EmbedBuilder()
       .setColor(DISCORD_COLOR.red)
       .setTitle('Archon Hunt')

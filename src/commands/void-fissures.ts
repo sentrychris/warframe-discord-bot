@@ -1,5 +1,6 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
+import { reportError } from '../error-reporter';
 
 interface Fissure {
   node: string;
@@ -56,45 +57,54 @@ function groupByTier(fissures: Fissure[]): Map<string, Fissure[]> {
  * Builds an embed showing active void fissures grouped by relic tier.
  */
 export const buildVoidFissuresEmbed = async (filterTier?: string): Promise<EmbedBuilder> => {
-  const res = await fetch(`${WARFRAME_API}/fissures?lang=en`);
-  const fissures: Fissure[] = await res.json();
+  try {
+    const res = await fetch(`${WARFRAME_API}/fissures?lang=en`);
+    const fissures: Fissure[] = await res.json();
 
-  if (!fissures.length) {
+    if (!fissures.length) {
+      return new EmbedBuilder()
+        .setTitle('Void Fissures')
+        .setDescription('No active fissures.')
+        .setColor(DISCORD_COLOR.blue)
+        .setThumbnail(DISCORD_ICON.void);
+    }
+
+    const grouped = groupByTier(fissures);
+
+    const entries = Array.from(grouped.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .filter(([tier]) => !filterTier || tier.toLowerCase() === filterTier.toLowerCase());
+
+    if (!entries.length) {
+      return new EmbedBuilder()
+        .setTitle('Void Fissures')
+        .setDescription(`No fissures found for tier: ${filterTier}`)
+        .setColor(DISCORD_COLOR.blue)
+        .setThumbnail(DISCORD_ICON.void);
+    }
+
+    const fields = entries.map(([tier, list]) => ({
+      name: `${tier} Relics`,
+      value: list
+        .sort((a, b) => a.node.localeCompare(b.node))
+        .map(formatFissure)
+        .join('\n'),
+      inline: false,
+    }));
+
     return new EmbedBuilder()
+      .setTitle('Active Void Fissures')
+      .setDescription(filterTier ? `Filtered by era: ${filterTier}` : 'Live fissures available for relic cracking')
+      .setColor(DISCORD_COLOR.orange)
+      .setThumbnail(DISCORD_ICON.void)
+      .addFields(fields)
+      .setFooter({ text: 'Steel Path and Void Storm included where applicable.' });
+  } catch (err) {
+    await reportError('Failed to fetch Void Fissures', err);
+    return new EmbedBuilder()
+      .setColor(DISCORD_COLOR.red)
       .setTitle('Void Fissures')
-      .setDescription('No active fissures.')
-      .setColor(DISCORD_COLOR.blue)
+      .setDescription('Unable to fetch fissure data at this time.')
       .setThumbnail(DISCORD_ICON.void);
   }
-
-  const grouped = groupByTier(fissures);
-
-  const entries = Array.from(grouped.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .filter(([tier]) => !filterTier || tier.toLowerCase() === filterTier.toLowerCase());
-
-  if (!entries.length) {
-    return new EmbedBuilder()
-      .setTitle('Void Fissures')
-      .setDescription(`No fissures found for tier: ${filterTier}`)
-      .setColor(DISCORD_COLOR.blue)
-      .setThumbnail(DISCORD_ICON.void);
-  }
-
-  const fields = entries.map(([tier, list]) => ({
-    name: `${tier} Relics`,
-    value: list
-      .sort((a, b) => a.node.localeCompare(b.node))
-      .map(formatFissure)
-      .join('\n'),
-    inline: false,
-  }));
-
-  return new EmbedBuilder()
-    .setTitle('Active Void Fissures')
-    .setDescription(filterTier ? `Filtered by era: ${filterTier}` : 'Live fissures available for relic cracking')
-    .setColor(DISCORD_COLOR.orange)
-    .setThumbnail(DISCORD_ICON.void)
-    .addFields(fields)
-    .setFooter({ text: 'Steel Path and Void Storm included where applicable.' });
 };

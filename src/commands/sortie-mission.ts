@@ -1,6 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import { DISCORD_COLOR, DISCORD_ICON, WARFRAME_API } from '../config';
 import { formatDuration } from '../util';
+import { reportError } from '../error-reporter';
 
 /**
  * Builds an embed showing today's Sortie details.
@@ -49,7 +50,7 @@ export const buildSortieMissionEmbed = async (
       )
       .setFooter({ text: embedFooter });
   } catch (err) {
-    console.error('Failed to fetch sortie:', err);
+    await reportError('Failed to fetch sortie', err);
     return new EmbedBuilder()
       .setColor(DISCORD_COLOR.red)
       .setTitle('Sortie — Daily Missions')
